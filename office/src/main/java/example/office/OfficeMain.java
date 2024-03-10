@@ -2,7 +2,6 @@ package example.office;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
 
 public class OfficeMain {
     public static void main(String[] args) throws IOException {
@@ -13,6 +12,7 @@ public class OfficeMain {
         // String docDirStr = scanner.nextLine();
 
         String docDirStr = "D:\\Workspace\\Example\\office\\src\\test\\resources\\段落测试";
+        String docLibDirStr = "D:\\Workspace\\Example\\office\\src\\test\\resources\\素材";
         String dictFileStr = "D:\\Workspace\\Example\\office\\src\\test\\resources\\conf.xlsx";
 
         File dictFile = new File(dictFileStr);
@@ -21,9 +21,9 @@ public class OfficeMain {
 
         try (Dict dict = new Dict(dictFile)) {
             File docDirTarget = new File(docDir.getParent(), "Target");
-            Doc doc = new Doc(dict);
+            WET WET = new WET(dict);
 
-            doc.process(docDir, docDirTarget);
+            WET.process(docDir, docDirTarget);
         }
     }
 

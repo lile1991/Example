@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Dict implements Closeable {
     Workbook workbook;
@@ -75,8 +77,26 @@ public class Dict implements Closeable {
      * @param paragraph 段落, 不含序号
      */
     public void replaceParagraph(XWPFParagraph paragraph) {
-        if(paragraphText.contains("{素材/素材1.docx:2.2.1}")) {
-            System.out.println(paragraph.getText());
+        String text = paragraph.getText();
+        String paragraphText = paragraph.getParagraphText();
+        Pattern pattern = Pattern.compile("\\{(.*/?.*):(.*)}");
+        Matcher matcher = pattern.matcher(text);
+        // "{素材/素材1.docx:2.2.1}"
+        while(matcher.find()) {
+            // Heading3
+            String pStyle = paragraph.getCTPPr() != null && paragraph.getCTPPr().getPStyle() != null ? paragraph.getCTPPr().getPStyle().getVal() : null;
+            System.out.println("pStyle=" + pStyle);
+
+            String token = matcher.group(0);
+            String materialPath = matcher.group(1);
+            String chapter = matcher.group(2);
+            System.out.println("引用素材路径: " + materialPath + ", 章节: " + chapter);
+
+            int level = paragraph.getCTP() != null && paragraph.getCTP().getPPr() != null
+                    && paragraph.getCTP().getPPr().getOutlineLvl() != null ? paragraph.getCTP().getPPr().getOutlineLvl().getVal().intValue() : -1;
+            if (level >= 0) {
+                System.out.println("Heading Level :: " + (level+1) + " Text::" + paragraphText);
+            }
         }
     }
 }

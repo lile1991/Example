@@ -1,6 +1,7 @@
 package example.office;
 
 import example.office.utils.CharsetUtils;
+import example.office.word.Word;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xwpf.usermodel.*;
@@ -9,10 +10,10 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.List;
 
-public class Doc {
+public class WET {
     private Dict dict;
 
-    public Doc(Dict dict) {
+    public WET(Dict dict) {
         this.dict = dict;
     }
 
@@ -40,7 +41,9 @@ public class Doc {
 
         // 读取源文件
         if(doc.getName().endsWith(".doc") || doc.getName().endsWith(".docx")) {
-            processDoc(doc, targetFile);
+            Word word = new Word(dict);
+            word.processDoc(doc, targetFile);
+            System.out.println(word);
         } else if(doc.getName().endsWith(".xls") || doc.getName().endsWith(".xlsx")) {
             processXls(doc, targetFile);
         } else if(doc.getName().endsWith(".txt")) {
@@ -90,75 +93,6 @@ public class Doc {
             try (FileOutputStream fos = new FileOutputStream(targetFile)) {
                 workbook.write(fos);
             }
-        }
-    }
-
-    /**
-     * 替换doc、docx文件
-     */
-    private void processDoc(File doc, File targetFile) throws IOException {
-        try (XWPFDocument document = new XWPFDocument(new FileInputStream(doc))) {
-            // 遍历所有段落
-            for (XWPFParagraph paragraph : document.getParagraphs()) {
-                // 替换文本
-                String paragraphText = paragraph.getText();
-                String newParagraphText = dict.replaceAll(paragraphText);
-                if(!newParagraphText.equals(paragraphText)) {
-                    removeRuns(paragraph);
-
-                    XWPFRun run = paragraph.createRun();
-                    run.setText(newParagraphText);
-                    paragraph.addRun(run);
-                }
-
-                // 替换段落
-                dict.replaceParagraph(paragraph);
-
-                // 遍历所有文本块
-                /*for (XWPFRun r : paragraph.getRuns()) {
-                    String runText = r.getText(0);
-                    if(runText == null) {
-                        continue;
-                    }
-
-                    // System.out.println(text);
-                    // 检查并替换文本
-                    String newText = dict.replaceAll(runText);
-                    if(!newText.equals(runText)) {
-                        r.setText(newText, 0);  // 设置新文本
-                    }
-                }*/
-            }
-            // 遍历所有表格
-            List<XWPFTable> tables = document.getTables();
-            for (XWPFTable table : tables){
-                List<XWPFTableRow> rows = table.getRows();
-                for (XWPFTableRow row : rows){
-                    List<XWPFTableCell> cells = row.getTableCells();
-                    for (XWPFTableCell cell : cells){
-                        String text = cell.getText();
-                        if(text == null) {
-                            continue;
-                        }
-
-                        String newText = dict.replaceAll(text);
-                        if(!newText.equals(text)) {
-                            cell.setText(newText);  // 设置新文本
-                        }
-                    }
-                }
-            }
-
-            try (FileOutputStream fos = new FileOutputStream(targetFile)) {
-                document.write(fos);
-            }
-        }
-    }
-
-    private void removeRuns(XWPFParagraph paragraph) {
-        List<XWPFRun> runs = paragraph.getRuns();
-        for (int i = runs.size() - 1; i >= 0; i --) {
-            paragraph.removeRun(i);
         }
     }
 }
